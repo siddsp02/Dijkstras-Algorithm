@@ -29,7 +29,7 @@ Graph = dict[str | int, dict[str | int, int]]  # Type alias for a Graph.
 
 
 def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | int:
-    """Returns the shortest path (or distance) between any two nodes
+    """Returns the shortest path (or distance) between any two vertices
     when given a graph.
 
     Arguments:

@@ -55,7 +55,7 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | 
 
     # Excluding the source, all vertices are marked as having a distance
     # that is unbounded ("inf") since they are unvisited.
-    unvisited = set(graph.keys())
+    unvisited = set(graph)
     distance = {vertex: 0 if vertex is source else inf for vertex in unvisited}
 
     while unvisited:

@@ -19,8 +19,6 @@ References:
     - https://www.youtube.com/watch?v=XB4MIexjvY0&ab_channel=AbdulBari
 """
 
-from __future__ import annotations
-
 from math import inf
 from pprint import pprint
 

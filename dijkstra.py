@@ -20,6 +20,7 @@ References:
 """
 
 from __future__ import annotations
+
 from math import inf
 from pprint import pprint
 

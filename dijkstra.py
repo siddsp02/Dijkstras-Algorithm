@@ -21,6 +21,7 @@ References:
 
 from __future__ import annotations
 from math import inf
+from pprint import pprint
 
 Graph = dict[str | int, dict[str | int, int]]  # Type alias for a Graph.
 
@@ -68,13 +69,15 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | 
         )
         unvisited.remove(nearest)
 
+        # Traverse the graphs through the neighbours
+        # of the nearest sorted vertex.
         for neighbour in graph[nearest]:
             if graph[nearest][neighbour] < 0:  # Prevent negative cycles.
                 raise ValueError("Edge cannot have a negative value.")
             if neighbour in unvisited and nearest is source:
                 distance[neighbour] = graph[nearest][neighbour]
                 if neighbour is target:
-                    break
+                    return distance[target]
             else:
                 distance[neighbour] = min(
                     distance[nearest] + graph[nearest][neighbour],
@@ -91,7 +94,16 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | 
         if target is None:
             return distance
 
-    return distance[target]
+
+def test_pathfinding(graph) -> None:
+    print("\n\nTesting the following graph:\n")
+    pprint(graph)
+    for vertex in graph:
+        print(
+            f"\nSource as vertex {vertex!r}\n",
+            dijkstra(graph, source=vertex),
+            sep="\n",
+        )
 
 
 def main() -> None:
@@ -111,12 +123,8 @@ def main() -> None:
         "e": {"d": 4},
         "f": {},
     }
-    print(dijkstra(test_graph, source="a"))
-    print(dijkstra(test_graph, source="s"))
-    print(dijkstra(test_graph, source="a", target="c"))
-    print(dijkstra(test_graph_2, source="a", target="f"))
-    print(dijkstra(test_graph_2, source="f"))
-    print(dijkstra(test_graph_2, source="f", target="a"))  # Should raise a LookupError.
+    test_pathfinding(graph=test_graph)
+    test_pathfinding(graph=test_graph_2)
 
 
 if __name__ == "__main__":

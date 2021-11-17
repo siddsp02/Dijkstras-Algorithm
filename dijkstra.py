@@ -1,7 +1,7 @@
 # !usr/bin/env python3
 
-"""An implementation of Dijkstra's algorithm written in Python. Dijkstra's algorithm
-finds the shortest path between two vertices when given a graph
+"""An implementation of Dijkstra's algorithm (No heap or priority queue) written in Python.
+Dijkstra's algorithm finds the shortest path between two vertices when given a graph
 with positive edge weights.
 
 Note:
@@ -48,12 +48,9 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         and target vertex in the graph.
     """
 
-    if source not in graph or target not in graph:  # Prevent invalid lookups.
+    if source not in graph or target not in graph:
         if target is not None:
             raise LookupError("Source or target vertex is not in graph.")
-
-    if source == target:
-        return None, 0
 
     # Excluding the source, all vertices are marked as having a distance
     # that is unbounded ('inf') since they are unvisited.
@@ -71,47 +68,45 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         )
         unvisited.remove(nearest)
 
-        if nearest is target:  # Early break from search.
-            if distance[target] == inf:
-                return "unreachable", inf
+        if nearest == target:
+            if distance[target] != inf:
+                break
+            return "unreachable", inf
 
         # Traverse the graph through the neighbours
         # of the nearest sorted vertex.
         for neighbour in graph[nearest]:
-            if neighbour not in unvisited:  # Skip over visited vertices.
-                continue
-            if graph[nearest][neighbour] < 0:  # Prevent negative cycles.
+            if graph[nearest][neighbour] < 0:
                 raise ValueError("Edge cannot have a negative value.")
-            if nearest is source:
-                distance[neighbour] = graph[nearest][neighbour]
-                previous[neighbour] = source
-            else:
-                new_distance = distance[nearest] + graph[nearest][neighbour]
-                if distance[neighbour] > new_distance:
-                    distance[neighbour] = new_distance
+            if neighbour in unvisited:
+                alternative = distance[nearest] + graph[nearest][neighbour]
+                if alternative < distance[neighbour]:
+                    distance[neighbour] = alternative
                     previous[neighbour] = nearest
 
+    # Predecessors are tracked from the target back
+    # to the source to reconstruct the shortest path,
+    # starting from the target.
     if target is not None:
-        # Predecessors are tracked from the target back
-        # to the source to reconstruct the shortest path
-        # taken from the source to the target.
         path = deque()
         predecessor = target
 
-        # Backtracks until the source is reached.
+        # Backtrack until the source is reached.
         while predecessor != source:
             path.appendleft(predecessor)
             predecessor = previous[predecessor]
+
+        # Add the starting point to the path.
+        path.appendleft(source)
         return path, distance[target]
+    
+    return distance, previous
 
-    return distance, previous  # Reached only if no target is specified.
 
-
-def test_pathfinding(graph: Graph) -> None:
+def test_pathfinding(graph: Graph, target: str = "a") -> None:
     print("\nTesting the following graph:\n")
     pprint(graph)
     print()
-    target = "d"
     for vertex in graph:
         print(f"Source as {vertex=!r} to {target=!r}: ", end="")
         path, distance = dijkstra(graph, source=vertex, target=target)
@@ -135,8 +130,8 @@ def main() -> None:
         "e": {"d": 4},
         "f": {},
     }
-    test_pathfinding(graph=test_graph)
-    test_pathfinding(graph=test_graph_2)
+    test_pathfinding(graph=test_graph, target="e")
+    test_pathfinding(graph=test_graph_2, target="e")
 
 
 if __name__ == "__main__":

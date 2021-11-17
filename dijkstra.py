@@ -42,10 +42,9 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         ValueError: If the weight of an edge is a negative integer.
 
     Returns:
-        tuple[Any, Any]: A summary of the shortest paths as a dictionary
-        if no target vertex is specified. Otherwise, an integer value
-        for the shortest distance between the source
-        and target vertex in the graph.
+        tuple[Any, Any]: A summary of the shortest paths as a dictionary if
+        no target vertex is specified. Otherwise, an integer value for the
+        shortest distance between the source and target vertex in the graph.
     """
 
     if source not in graph or target not in graph:
@@ -85,21 +84,18 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
                     previous[neighbour] = nearest
 
     # Predecessors are tracked from the target back
-    # to the source to reconstruct the shortest path,
-    # starting from the target.
+    # to the source to reconstruct the shortest path
+    # from the source to the target.
     if target is not None:
         path = deque()
         predecessor = target
 
         # Backtrack until the source is reached.
-        while predecessor != source:
+        while predecessor is not None:
             path.appendleft(predecessor)
-            predecessor = previous[predecessor]
-
-        # Add the starting point to the path.
-        path.appendleft(source)
+            predecessor = previous.get(predecessor, None)
         return path, distance[target]
-    
+
     return distance, previous
 
 

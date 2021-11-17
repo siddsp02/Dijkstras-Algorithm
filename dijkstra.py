@@ -19,16 +19,16 @@ References:
     - https://www.youtube.com/watch?v=XB4MIexjvY0&ab_channel=AbdulBari
 """
 
+from collections import deque
 from math import inf
 from pprint import pprint
+from typing import Any, Union
 
-Graph = dict[str | int, dict[str | int, int]]  # Type alias for a Graph.
-
-# Type hints need to be fixed.
+Graph = dict[Any, dict[Any, Union[int, float]]]
 
 
-def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | int:
-    """Returns the shortest path (or distance) between any two vertices
+def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
+    """Returns the shortest distance (or path) between any two vertices
     when given a graph.
 
     Arguments:
@@ -40,69 +40,82 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> dict[str, int] | 
     Raises:
         LookupError: If the source or target vertex is not in the graph.
         ValueError: If the weight of an edge is a negative integer.
-        LookupError: If the target vertex is unreachable from the source.
 
     Returns:
-        dict[str, int] | int: A summary of the shortest paths as
-        a dictionary if no target vertex is specified. Otherwise,
-        an integer value for the shortest distance between
-        the source and target vertex in the graph.
+        tuple[Any, Any]: A summary of the shortest paths as a dictionary
+        if no target vertex is specified. Otherwise, an integer value
+        for the shortest distance between the source
+        and target vertex in the graph.
     """
 
     if source not in graph or target not in graph:  # Prevent invalid lookups.
         if target is not None:
             raise LookupError("Source or target vertex is not in graph.")
 
+    if source == target:
+        return None, 0
+
     # Excluding the source, all vertices are marked as having a distance
-    # that is unbounded ("inf") since they are unvisited.
+    # that is unbounded ('inf') since they are unvisited.
     unvisited = set(graph)
     distance = {vertex: 0 if vertex is source else inf for vertex in unvisited}
+    previous = {}
 
     while unvisited:
         # Get the vertex with the shortest distance in the mapping
-        # of vertices to distances.
+        # of vertices to distances only if the vertex is unvisited.
         nearest = next(
             vertex
-            for vertex in sorted(distance, key=distance.get)
+            for vertex in sorted(distance, key=distance.get)  # type: ignore
             if vertex in unvisited
         )
         unvisited.remove(nearest)
 
-        # Traverse the graphs through the neighbours
+        if nearest is target:  # Early break from search.
+            if distance[target] == inf:
+                return "unreachable", inf
+
+        # Traverse the graph through the neighbours
         # of the nearest sorted vertex.
         for neighbour in graph[nearest]:
+            if neighbour not in unvisited:  # Skip over visited vertices.
+                continue
             if graph[nearest][neighbour] < 0:  # Prevent negative cycles.
                 raise ValueError("Edge cannot have a negative value.")
-            if neighbour in unvisited and nearest is source:
+            if nearest is source:
                 distance[neighbour] = graph[nearest][neighbour]
-                if neighbour is target:
-                    return distance[target]
+                previous[neighbour] = source
             else:
-                distance[neighbour] = min(
-                    distance[nearest] + graph[nearest][neighbour],
-                    distance[neighbour],
-                )
+                new_distance = distance[nearest] + graph[nearest][neighbour]
+                if distance[neighbour] > new_distance:
+                    distance[neighbour] = new_distance
+                    previous[neighbour] = nearest
 
-    try:
-        # If the distance to the target was still marked as "inf",
-        # then the target vertex was not reached.
-        if distance[target] == inf:
-            raise LookupError("Target vertex is unreachable from source.")
-    except KeyError:
-        # Target was not assigned, or assigned to None.
-        if target is None:
-            return distance
+    if target is not None:
+        # Predecessors are tracked from the target back
+        # to the source to reconstruct the shortest path
+        # taken from the source to the target.
+        path = deque()
+        predecessor = target
+
+        # Backtracks until the source is reached.
+        while predecessor != source:
+            path.appendleft(predecessor)
+            predecessor = previous[predecessor]
+        return path, distance[target]
+
+    return distance, previous  # Reached only if no target is specified.
 
 
-def test_pathfinding(graph) -> None:
-    print("\n\nTesting the following graph:\n")
+def test_pathfinding(graph: Graph) -> None:
+    print("\nTesting the following graph:\n")
     pprint(graph)
+    print()
+    target = "d"
     for vertex in graph:
-        print(
-            f"\nSource as vertex {vertex!r}\n",
-            dijkstra(graph, source=vertex),
-            sep="\n",
-        )
+        print(f"Source as {vertex=!r} to {target=!r}: ", end="")
+        path, distance = dijkstra(graph, source=vertex, target=target)
+        print(f"{path=}, {distance=}")
 
 
 def main() -> None:

@@ -5,9 +5,10 @@ with positive edge weights.
 The priority queue data structure is emulated using the 'heapq' module.
 """
 
+import heapq
 from collections import deque
-from heapq import heappop, heappush
 from math import inf
+from pprint import pprint
 from typing import Any, Union
 
 Graph = dict[Any, dict[Any, Union[int, float]]]
@@ -15,23 +16,21 @@ Graph = dict[Any, dict[Any, Union[int, float]]]
 
 def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
     """Dijkstra's algorithm, but with a priority queue."""
-    
+
     if source not in graph or target not in graph:
         if target is not None:
             raise LookupError("Source or target vertex is not in graph.")
 
     previous, unvisited = {}, []
 
-    # Excluding the source, all vertices are marked as having an
-    # infinite distance since they have not been visited.
     for vertex in graph:
-        heappush(unvisited, (0 if vertex is source else inf, vertex))
+        heapq.heappush(unvisited, (0 if vertex is source else inf, vertex))
 
     distance = {cost: vertex for vertex, cost in unvisited}
 
     while unvisited:
-        # Remove and get the next best vertex in the graph.
-        _, nearest = heappop(unvisited)
+        # Remove and get the next best vertex.
+        _, nearest = heapq.heappop(unvisited)
 
         if nearest == target:
             break

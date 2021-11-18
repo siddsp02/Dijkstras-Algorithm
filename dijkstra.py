@@ -51,15 +51,13 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         if target is not None:
             raise LookupError("Source or target vertex is not in graph.")
 
-    # Excluding the source, all vertices are marked as having a distance
-    # that is unbounded ('inf') since they are unvisited.
-    unvisited = set(graph)
+    # Excluding the source, all vertices are marked as having an
+    # infinite distance since they have not been visited.
+    previous, unvisited = {}, set(graph)
     distance = {vertex: 0 if vertex is source else inf for vertex in unvisited}
-    previous = {}
 
     while unvisited:
-        # Get the vertex with the shortest distance in the mapping
-        # of vertices to distances only if the vertex is unvisited.
+        # Get the next best vertex in the graph.
         nearest = next(
             vertex
             for vertex in sorted(distance, key=distance.get)  # type: ignore
@@ -68,17 +66,14 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         unvisited.remove(nearest)
 
         if nearest == target:
-            if distance[target] != inf:
-                break
-            return "unreachable", inf
+            break
 
-        # Traverse the graph through the neighbours
-        # of the nearest sorted vertex.
-        for neighbour in graph[nearest]:
-            if graph[nearest][neighbour] < 0:
+        # Traverse neighbours of the nearest sorted vertex.
+        for neighbour, cost in graph[nearest].items():
+            if cost < 0:
                 raise ValueError("Edge cannot have a negative value.")
             if neighbour in unvisited:
-                alternative = distance[nearest] + graph[nearest][neighbour]
+                alternative = distance[nearest] + cost
                 if alternative < distance[neighbour]:
                     distance[neighbour] = alternative
                     previous[neighbour] = nearest
@@ -93,7 +88,7 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         # Backtrack until the source is reached.
         while predecessor is not None:
             path.appendleft(predecessor)
-            predecessor = previous.get(predecessor, None)
+            predecessor = previous.get(predecessor)
         return path, distance[target]
 
     return distance, previous

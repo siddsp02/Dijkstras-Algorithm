@@ -52,7 +52,6 @@ def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, 
         Defaults to None.
 
     Raises:
-        LookupError: If the source or target vertex is not in the graph.
         ValueError: If the weight of an edge is a negative integer.
 
     Returns:

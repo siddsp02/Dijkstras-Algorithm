@@ -9,33 +9,29 @@ import heapq
 from collections import deque
 from math import inf
 from pprint import pprint
-from typing import Any, Union
+from typing import Any, Hashable, Union
 
-Graph = dict[Any, dict[Any, Union[int, float]]]
+Vertex = Hashable
+Graph = dict[Vertex, dict[Vertex, Union[int, float]]]
 
 
-def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
+def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, Any]:
     """Dijkstra's algorithm, but with a priority queue."""
-
-    if source not in graph or target not in graph:
-        if target is not None:
-            raise LookupError("Source or target vertex is not in graph.")
 
     previous, unvisited = {}, []
 
     for vertex in graph:
-        heapq.heappush(unvisited, (0 if vertex is source else inf, vertex))
+        heapq.heappush(unvisited, (0 if vertex == source else inf, vertex))
 
-    distance = {cost: vertex for vertex, cost in unvisited}
+    distance = dict(map(reversed, unvisited))
 
     while unvisited:
-        # Remove and get the next best vertex.
+        # Remove and get next best vertex.
         _, nearest = heapq.heappop(unvisited)
 
         if nearest == target:
             break
 
-        # Traverse the neighbours of the nearest sorted vertex.
         for neighbour, cost in graph[nearest].items():
             if cost < 0:
                 raise ValueError("Edge cannot have a negative value.")
@@ -43,17 +39,16 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
             if alternative < distance[neighbour]:
                 distance[neighbour] = alternative
                 previous[neighbour] = nearest
+    else:
+        return previous, distance
 
-    # Predecessors are tracked from the target back
-    # to the source to reconstruct the shortest path.
-    if target is not None:
-        path = deque()
-        predecessor = target
+    path = deque()
+    predecessor = target
 
-        # Backtrack until the source is reached.
-        while predecessor is not None:
-            path.appendleft(predecessor)
-            predecessor = previous.get(predecessor)
-        return path, distance[target]
+    # Reconstruct the shortest path by traversing
+    # from the target back to the source.
+    while predecessor is not None:
+        path.appendleft(predecessor)
+        predecessor = previous.get(predecessor)
 
-    return previous, distance
+    return path, distance[target]

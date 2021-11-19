@@ -1,17 +1,16 @@
 # !usr/bin/env python3
 
-"""An implementation of Dijkstra's algorithm (No heap or priority queue) written in Python.
-Dijkstra's algorithm finds the shortest path between two vertices when given a graph
-with positive edge weights.
+"""An implementation of Dijkstra's algorithm (No heap or priority queue)
+written in Python. Dijkstra's algorithm finds the shortest path between
+two vertices when given a graph with non-negative edge weights.
 
 Note:
     - The implementation of this algorithm differs from the version given
     in the references because the input for the graph is in the form of
-    nested dictionaries instead of arrays, and Python does not have "pointers",
-    with the exception of reference types.
+    nested dictionaries instead of arrays.
     - Dijkstra's algorithm does not work with negative edge weights.
     - The following code is original, and has not been taken from anywhere else,
-    apart from taking some ideas from the pseudocode from Wikipedia.
+    apart from borrowing some ideas from the pseudocode in the Wikipedia entry.
 
 References:
     - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
@@ -22,12 +21,27 @@ References:
 from collections import deque
 from math import inf
 from pprint import pprint
-from typing import Any, Union
+from typing import Any, Hashable, Union, overload
 
-Graph = dict[Any, dict[Any, Union[int, float]]]
+Vertex = Hashable
+Graph = dict[Vertex, dict[Vertex, Union[int, float]]]
+Distances = dict[Vertex, Union[int, float]]
+Predecessors = dict[Vertex, Vertex]
+Path = deque[Vertex]
+Cost = Union[int, float]
 
 
-def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
+@overload
+def dijkstra(graph: Graph, source: Vertex) -> tuple[Distances, Predecessors]:
+    ...
+
+
+@overload
+def dijkstra(graph: Graph, source: Vertex, target: Vertex) -> tuple[Path, Cost]:
+    ...
+
+
+def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, ...]:
     """Returns the shortest distance (or path) between any two vertices
     when given a graph.
 
@@ -42,25 +56,24 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         ValueError: If the weight of an edge is a negative integer.
 
     Returns:
-        tuple[Any, Any]: A summary of the shortest paths as a dictionary if
-        no target vertex is specified. Otherwise, an integer value for the
-        shortest distance between the source and target vertex in the graph.
+        tuple[Any, ...]: The shortest distance from the source vertex to
+        all other vertices, and the predecessor of every vertex, which
+        can be used for path reconstruction if no target is specified
+        or the target does not exist within the graph. If a target vertex
+        is specified, then the shortest path will be returned,
+        along with the cost of the path.
     """
 
-    if source not in graph or target not in graph:
-        if target is not None:
-            raise LookupError("Source or target vertex is not in graph.")
-
-    # Excluding the source, all vertices are marked as having an
-    # infinite distance since they have not been visited.
     previous, unvisited = {}, set(graph)
-    distance = {vertex: 0 if vertex is source else inf for vertex in unvisited}
+    distance = {vertex: inf for vertex in graph}
+
+    distance[source] = 0
 
     while unvisited:
-        # Get the next best vertex in the graph.
+        # Get and remove the best unvisited vertex.
         nearest = next(
             vertex
-            for vertex in sorted(distance, key=distance.get)  # type: ignore
+            for vertex in sorted(distance, key=distance.__getitem__)
             if vertex in unvisited
         )
         unvisited.remove(nearest)
@@ -68,33 +81,32 @@ def dijkstra(graph: Graph, source: str, target: str = None) -> tuple[Any, Any]:
         if nearest == target:
             break
 
-        # Traverse neighbours of the nearest sorted vertex.
         for neighbour, cost in graph[nearest].items():
             if cost < 0:
-                raise ValueError("Edge cannot have a negative value.")
+                raise ValueError("Edge cannot be negative.")
             if neighbour in unvisited:
                 alternative = distance[nearest] + cost
                 if alternative < distance[neighbour]:
                     distance[neighbour] = alternative
                     previous[neighbour] = nearest
+    else:
+        return distance, previous
 
-    # Predecessors are tracked from the target back
-    # to the source to reconstruct the shortest path
-    # from the source to the target.
-    if target is not None:
-        path = deque()
-        predecessor = target
+    path = deque()
+    predecessor = target
 
-        # Backtrack until the source is reached.
-        while predecessor is not None:
-            path.appendleft(predecessor)
-            predecessor = previous.get(predecessor)
-        return path, distance[target]
+    # Reconstruct the shortest path by traversing
+    # from the target back to the source.
+    while predecessor is not None:
+        path.appendleft(predecessor)
+        predecessor = previous.get(predecessor)
 
-    return distance, previous
+    return path, distance[target]
 
 
-def test_pathfinding(graph: Graph, target: str = "a") -> None:
+def test_pathfinding(graph: Graph, target: str = "e") -> None:
+    """Short test for dijkstra's algorithm."""
+
     print("\nTesting the following graph:\n")
     pprint(graph)
     print()
@@ -121,8 +133,8 @@ def main() -> None:
         "e": {"d": 4},
         "f": {},
     }
-    test_pathfinding(graph=test_graph, target="e")
-    test_pathfinding(graph=test_graph_2, target="e")
+    test_pathfinding(graph=test_graph)
+    test_pathfinding(graph=test_graph_2)
 
 
 if __name__ == "__main__":

@@ -71,8 +71,7 @@ def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, 
     while unvisited:
         # Get and remove the best unvisited vertex.
         nearest = next(
-            vertex
-            for vertex in sorted(distance, key=distance.__getitem__)
+            vertex for vertex in sorted(distance, key=distance.get)
             if vertex in unvisited
         )
         unvisited.remove(nearest)
@@ -105,7 +104,6 @@ def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, 
 
 def test_pathfinding(graph: Graph, target: str = "e") -> None:
     """Short test for dijkstra's algorithm."""
-
     print("\nTesting the following graph:\n")
     pprint(graph)
     print()

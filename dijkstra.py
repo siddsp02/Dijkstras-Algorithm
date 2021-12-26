@@ -3,7 +3,6 @@
 """An implementation of Dijkstra's algorithm (No heap or priority queue)
 written in Python. Dijkstra's algorithm finds the shortest path between
 two vertices when given a graph with non-negative edge weights.
-
 Note:
     - The implementation of this algorithm differs from the version given
     in the references because the input for the graph is in the form of
@@ -11,7 +10,6 @@ Note:
     - Dijkstra's algorithm does not work with negative edge weights.
     - The following code is original, and has not been taken from anywhere else,
     apart from borrowing some ideas from the pseudocode in the Wikipedia entry.
-
 References:
     - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
     - https://www.youtube.com/watch?v=GazC3A4OQTE&ab_channel=Computerphile
@@ -21,40 +19,36 @@ References:
 from collections import deque
 from math import inf
 from pprint import pprint
-from typing import Any, Hashable, Union, overload
+from typing import TypeVar, overload
 
-Vertex = Hashable
-Graph = dict[Vertex, dict[Vertex, Union[int, float]]]
-Distances = dict[Vertex, Union[int, float]]
-Predecessors = dict[Vertex, Vertex]
-Path = deque[Vertex]
-Cost = Union[int, float]
+K = TypeVar("K")
+V = TypeVar("V", bound=int | float)
+Graph = dict[K, dict[K, V]]
 
 
 @overload
-def dijkstra(graph: Graph, source: Vertex) -> tuple[Distances, Predecessors]:
+def dijkstra(graph: Graph, source: K, target: None) -> tuple[dict[K, V], dict[K, K]]:
     ...
 
 
 @overload
-def dijkstra(graph: Graph, source: Vertex, target: Vertex) -> tuple[Path, Cost]:
+def dijkstra(graph: Graph, source: K, target: K) -> tuple[deque[K], V]:
     ...
 
 
-def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, ...]:
+def dijkstra(graph, source, target):
     """Returns the shortest distance (or path) between any two vertices
     when given a graph.
-
     Arguments:
         graph (Graph): The graph to traverse the vertices and edges of.
-        source (str): The vertex to start at when pathfinding.
-        target (str, optional): The vertex to find the shortest path to.
+        source (K): The vertex to start at when pathfinding.
+        target (K, optional): The vertex to find the shortest path to.
         Defaults to None.
-
     Raises:
         ValueError: If the weight of an edge is a negative integer.
-
     Returns:
+        tuple[]
+
         tuple[Any, ...]: The shortest distance from the source vertex to
         all other vertices, and the predecessor of every vertex, which
         can be used for path reconstruction if no target is specified
@@ -90,8 +84,7 @@ def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, 
     else:
         return distance, previous
 
-    path = deque()
-    predecessor = target
+    path, predecessor = deque(), target
 
     # Reconstruct the shortest path by traversing
     # from the target back to the source.
@@ -102,7 +95,7 @@ def dijkstra(graph: Graph, source: Vertex, target: Vertex = None) -> tuple[Any, 
     return path, distance[target]
 
 
-def test_pathfinding(graph: Graph, target: str = "e") -> None:
+def test_pathfinding(graph: Graph, target: K) -> None:
     """Short test for dijkstra's algorithm."""
     print("\nTesting the following graph:\n")
     pprint(graph)
@@ -130,8 +123,8 @@ def main() -> None:
         "e": {"d": 4},
         "f": {},
     }
-    test_pathfinding(graph=test_graph)
-    test_pathfinding(graph=test_graph_2)
+    test_pathfinding(graph=test_graph, target="e")
+    test_pathfinding(graph=test_graph_2, target="e")
 
 
 if __name__ == "__main__":

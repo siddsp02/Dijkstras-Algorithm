@@ -65,7 +65,6 @@ def dijkstra(graph, src, dst=None):
     References:
         - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
     """
-
     dist = cast(dict[K, V], dict.fromkeys(graph, INF))
     prev = cast(dict[K, K], dict.fromkeys(graph, None))
     dist[src] = 0

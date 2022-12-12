@@ -3,7 +3,6 @@
 """An implementation of Dijkstra's algorithm (No heap or priority queue)
 written in Python. Dijkstra's algorithm finds the shortest path between
 two vertices when given a graph with non-negative edge weights.
-
 Note:
     - The implementation of this algorithm differs from the version given
     in the references because the input for the graph is in the form of
@@ -11,7 +10,6 @@ Note:
     - Dijkstra's algorithm does not work with negative edge weights.
     - The following code is original, and has not been taken from anywhere else,
     apart from borrowing some ideas from the pseudocode in the Wikipedia entry.
-
 References:
     - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
     - https://www.youtube.com/watch?v=GazC3A4OQTE&ab_channel=Computerphile
@@ -20,7 +18,7 @@ References:
 
 from collections import deque
 from pprint import pprint
-from typing import Mapping, TypeVar, cast, overload
+from typing import Mapping, TypeVar, overload
 
 
 TEST_GRAPHS = [
@@ -58,15 +56,15 @@ def dijkstra(graph: Mapping[K, Mapping[K, V]], src: K, dst: K) -> tuple[deque[K]
     ...
 
 
-def dijkstra(graph, src, dst=None):
+def dijkstra(graph, src, dst=None):  # type: ignore
     """Returns the shortest distance (or path) between any two vertices
     when given a weighted graph.
 
     References:
         - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
     """
-    dist = cast(dict[K, V], dict.fromkeys(graph, INF))
-    prev = cast(dict[K, K], dict.fromkeys(graph, None))
+    dist = dict.fromkeys(graph, INF)
+    prev = dict.fromkeys(graph, None)
     dist[src] = 0
     unmarked = set(graph)
     while unmarked:

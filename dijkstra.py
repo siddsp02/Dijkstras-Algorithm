@@ -17,6 +17,7 @@ References:
 """
 
 from collections import deque
+from math import inf
 from pprint import pprint
 from typing import Mapping, TypeVar, overload
 
@@ -40,8 +41,6 @@ TEST_GRAPHS = [
     },
 ]
 
-INF = float("inf")
-
 K = TypeVar("K")
 V = TypeVar("V", bound=float)
 
@@ -63,7 +62,7 @@ def dijkstra(graph, src, dst=None):  # type: ignore
     References:
         - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
     """
-    dist = dict.fromkeys(graph, INF)
+    dist = dict.fromkeys(graph, inf)
     prev = dict.fromkeys(graph, None)
     dist[src] = 0
     unmarked = set(graph)
